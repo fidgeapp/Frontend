@@ -1,0 +1,158 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Space+Mono:wght@400;700&family=Rajdhani:wght@500;600;700&display=swap');
+
+:root {
+  --black:        #000000;
+  --black-1:      #080808;
+  --black-2:      #0f0f0f;
+  --black-3:      #161616;
+  --black-4:      #1e1e1e;
+  --white:        #ffffff;
+  --white-90:     rgba(255,255,255,0.9);
+  --white-60:     rgba(255,255,255,0.6);
+  --white-30:     rgba(255,255,255,0.3);
+  --white-12:     rgba(255,255,255,0.12);
+  --white-06:     rgba(255,255,255,0.06);
+  --border-sharp: 1px solid rgba(255,255,255,0.25);
+  --border-glow:  1px solid rgba(255,255,255,0.5);
+  --border-dim:   1px solid rgba(255,255,255,0.08);
+  --glow-sm:      0 0 12px rgba(255,255,255,0.15);
+  --glow-md:      0 0 24px rgba(255,255,255,0.2);
+  --glow-lg:      0 0 48px rgba(255,255,255,0.12);
+  --shadow-card:  0 4px 24px rgba(0,0,0,0.8), 0 1px 0 rgba(255,255,255,0.06) inset;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  background: var(--black);
+  color: var(--white);
+  font-family: 'Rajdhani', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Sharp scrollbar */
+::-webkit-scrollbar { width: 2px; }
+::-webkit-scrollbar-track { background: #000; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); }
+
+a { text-decoration: none; color: inherit; }
+button { cursor: pointer; border: none; outline: none; font-family: inherit; }
+
+/* ── DOT GRID BACKGROUND ── */
+.dot-bg {
+  background-image: radial-gradient(circle, rgba(255,255,255,0.18) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+/* ── GRADIENT BACKGROUNDS ── */
+.bg-radial-top {
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(255,255,255,0.07) 0%, transparent 70%),
+    #000000;
+}
+
+.bg-radial-center {
+  background:
+    radial-gradient(ellipse 60% 60% at 50% 50%, rgba(255,255,255,0.05) 0%, transparent 70%),
+    #000000;
+}
+
+/* ── CARD ── */
+.card {
+  background: linear-gradient(145deg, var(--black-3), var(--black-2));
+  border: var(--border-sharp);
+  border-radius: 18px;
+  box-shadow: var(--shadow-card);
+  position: relative;
+  overflow: hidden;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.04) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+/* ── SHARP BUTTON ── */
+.btn-sharp {
+  background: transparent;
+  border: var(--border-sharp);
+  border-radius: 10px;
+  color: white;
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  letter-spacing: 1px;
+  transition: all 0.2s;
+}
+
+.btn-sharp:hover {
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.5);
+  box-shadow: var(--glow-sm);
+}
+
+/* ── PILL ── */
+.pill {
+  background: var(--black-3);
+  border: var(--border-dim);
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ── GLOW TEXT ── */
+.glow-text {
+  text-shadow: 0 0 20px rgba(255,255,255,0.5), 0 0 60px rgba(255,255,255,0.2);
+}
+
+/* ── SHIMMER LINE ── */
+@keyframes shimmer {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.shimmer::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.04), transparent);
+  animation: shimmer 3s infinite;
+}
+
+/* ── PULSE DOT ── */
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.4; transform: scale(0.8); }
+}
+
+.pulse { animation: pulse-dot 2s ease-in-out infinite; }
+
+/* ── FADE IN ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.fade-up { animation: fadeUp 0.5s ease forwards; }
+.fade-up-2 { animation: fadeUp 0.5s 0.1s ease forwards; opacity: 0; }
+.fade-up-3 { animation: fadeUp 0.5s 0.2s ease forwards; opacity: 0; }
+.fade-up-4 { animation: fadeUp 0.5s 0.3s ease forwards; opacity: 0; }
+
+/* ── WALLET MODAL ANIMATIONS ── */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
