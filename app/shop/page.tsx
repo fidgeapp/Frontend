@@ -194,7 +194,7 @@ export default function ShopPage() {
           </div>
           <div style={{ textAlign: 'right' }}>
             <p style={{ fontFamily: 'Rajdhani,sans-serif', fontSize: 12, color: 'rgba(255,255,255,0.35)' }}>Convert points to gems in your Profile</p>
-            <a href="/coming-soon"
+            <a href="/coming_soon"
                   target="_blank"
                   rel="noopener noreferrer" style={{ display: 'inline-block', marginTop: 8, padding: '6px 14px', background: 'rgba(96,165,250,0.12)', border: '1px solid rgba(96,165,250,0.3)', borderRadius: 8, fontFamily: 'Orbitron,sans-serif', fontSize: 10, fontWeight: 700, color: '#60a5fa', letterSpacing: 1, textDecoration: 'none' }}>
               💎 BUY GEMS →
