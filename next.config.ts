@@ -1,7 +1,8 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  // Nothing wallet-specific needed — plain Next.js config
+  // Required for the Docker multi-stage build (Stage 3 copies .next/standalone)
+  output: 'standalone',
 };
 
 export default nextConfig;
