@@ -1,0 +1,21 @@
+[build]
+dockerfilePath = "Dockerfile"
+
+# Pass service variables as Docker build args so NEXT_PUBLIC_* vars
+# are available when `npm run build` runs inside the builder stage.
+[build.args]
+NEXT_PUBLIC_API_URL = "$NEXT_PUBLIC_API_URL"
+NEXT_PUBLIC_ETH_WALLET = "$NEXT_PUBLIC_ETH_WALLET"
+NEXT_PUBLIC_AD_PROVIDER = "$NEXT_PUBLIC_AD_PROVIDER"
+NEXT_PUBLIC_ADSENSE_CLIENT = "$NEXT_PUBLIC_ADSENSE_CLIENT"
+NEXT_PUBLIC_ADSENSE_SLOT = "$NEXT_PUBLIC_ADSENSE_SLOT"
+NEXT_PUBLIC_ADSTERRA_SOCIAL_BAR = "$NEXT_PUBLIC_ADSTERRA_SOCIAL_BAR"
+NEXT_PUBLIC_ADSTERRA_POPUNDER = "$NEXT_PUBLIC_ADSTERRA_POPUNDER"
+NEXT_PUBLIC_ADSTERRA_DIRECT_LINK = "$NEXT_PUBLIC_ADSTERRA_DIRECT_LINK"
+
+[deploy]
+startCommand = "node server.js"
+healthcheckPath = "/"
+healthcheckTimeout = 30
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 3
