@@ -3,10 +3,17 @@
 /**
  * AuthContext — token-based auth.
  *
- * On login/register: backend returns a token → stored in localStorage as 'fidge_token'
- * On every request: token sent as X-Auth-Token header (handled by api.ts)
- * On mount: if token exists in localStorage, call /auth/me to restore session
- * On logout: token deleted from localStorage + invalidated on server
+ * Security model for localStorage:
+ * - 'fidge_token'  : auth token — safe to store (opaque, server validates it)
+ * - 'fidge_user'   : display-only cache — NEVER used to credit points/energy/gems.
+ *                    Sensitive reward fields (points, gems, pcedoEarned) are STRIPPED
+ *                    before saving so DevTools manipulation cannot inflate them.
+ * - 'fidge_energy' : energy cache for smooth UI between page loads. Energy is read
+ *                    as a MINIMUM (Math.min with server value) on restore, so inflating
+ *                    it in DevTools has no effect — the server always wins upward.
+ *
+ * On every page load, /auth/me is called to get fresh authoritative values from
+ * the server, overwriting anything in localStorage.
  */
 
 import {
@@ -53,18 +60,46 @@ export interface AuthContextType extends AuthState {
 const USER_KEY   = 'fidge_user';
 const ENERGY_KEY = 'fidge_energy';
 
-function saveUser(s: AuthState) {
-  try { localStorage.setItem(USER_KEY, JSON.stringify(s)); } catch {}
+/**
+ * Fields that are SAFE to cache locally (display / identity only).
+ * Reward fields (points, gems, pcedoEarned, spinPoints, questPoints) are
+ * intentionally excluded so DevTools manipulation has zero effect.
+ */
+interface SafeUserCache {
+  loggedIn:    boolean;
+  userId:      number | null;
+  email:       string | null;
+  username:    string | null;
+  avatarColor: string | null;
+  referralCode:string | null;
+  activeSkin:  string;
 }
-function loadUser(): AuthState | null {
+
+function saveUser(s: AuthState) {
+  try {
+    // Only persist non-sensitive fields — reward values come from server only
+    const safe: SafeUserCache = {
+      loggedIn:    s.loggedIn,
+      userId:      s.userId,
+      email:       s.email,
+      username:    s.username,
+      avatarColor: s.avatarColor,
+      referralCode:s.referralCode,
+      activeSkin:  s.activeSkin,
+    };
+    localStorage.setItem(USER_KEY, JSON.stringify(safe));
+  } catch {}
+}
+
+function loadUser(): SafeUserCache | null {
   try {
     if (typeof window === 'undefined') return null;
     const raw = localStorage.getItem(USER_KEY);
-    // Only use cache if a token also exists
     if (!raw || !TokenStore.get()) return null;
-    return JSON.parse(raw);
+    return JSON.parse(raw) as SafeUserCache;
   } catch { return null; }
 }
+
 function clearUser() {
   try {
     localStorage.removeItem(USER_KEY);
@@ -127,9 +162,15 @@ function userToState(u: FidgeUser): AuthState {
   };
 }
 
+/**
+ * Merge persisted energy into server state.
+ * Energy is taken as Math.min(persisted, server) — the server value wins
+ * whenever the cached value is higher (i.e. user tried to inflate it in DevTools).
+ */
 function withPersistedEnergy(base: AuthState): AuthState {
   const p = loadPersistedEnergy();
   if (!p) return base;
+  // Never let localStorage push energy ABOVE what the server reported
   return { ...base, energy: Math.min(p.energy, base.energy), adsWatched: p.adsWatched };
 }
 
@@ -150,9 +191,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // ── Mount: restore session from token ─────────────────────────────────────
   useEffect(() => {
-    // Paint from cache immediately — no flash
+    // Paint from safe identity cache immediately — no reward values, no flash
     const cached = loadUser();
-    if (cached) setState(cached);
+    if (cached?.loggedIn) {
+      setState(prev => ({
+        ...prev,
+        loggedIn:    cached.loggedIn,
+        userId:      cached.userId,
+        email:       cached.email,
+        username:    cached.username,
+        avatarColor: cached.avatarColor,
+        referralCode:cached.referralCode,
+        activeSkin:  cached.activeSkin,
+      }));
+    }
 
     const token = TokenStore.get();
     if (!token) {
@@ -160,7 +212,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    // Verify token is still valid with server
+    // Verify token and get authoritative values from server
     Auth.me()
       .then(({ user }) => cache(withPersistedEnergy(userToState(user))))
       .catch(() => {
@@ -184,8 +236,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const refreshFromServer = useCallback(async () => {
     const { user } = await Auth.me();
-    // Use server value directly — never blend with localStorage here,
-    // so a tampered localStorage value can never inflate the result.
+    // Use server value directly — never blend with localStorage here
     cache(userToState(user));
   }, [cache]);
 
@@ -201,7 +252,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const watchAd = useCallback(async () => {
     const res = await SpinnerApi.watchAd();
-    // If backend says there's a cooldown, compute and persist the exact end timestamp
     const cooldownUntil = res.cooldown_seconds > 0
       ? Date.now() + res.cooldown_seconds * 1000
       : 0;
